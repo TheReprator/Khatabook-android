@@ -1,0 +1,2 @@
+rootProject.name = "Khatabook-android"
+include ':app'
