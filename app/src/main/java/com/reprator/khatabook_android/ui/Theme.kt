@@ -1,10 +1,12 @@
 package com.reprator.khatabook_android.ui
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 
 
 private val DarkColorPalette = darkColors(
@@ -43,3 +45,7 @@ fun KhatabookandroidTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @
             content = content
     )
 }
+
+@Composable
+val Colors.snackbarAction: Color
+    get() = if (isLight) purple200 else purple700

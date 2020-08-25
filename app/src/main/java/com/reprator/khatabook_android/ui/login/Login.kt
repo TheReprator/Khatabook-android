@@ -1,7 +1,6 @@
 package com.reprator.khatabook_android.ui.login
 
 import android.app.Activity
-import android.util.Log
 import android.view.inputmethod.InputMethodManager
 import androidx.compose.foundation.Text
 import androidx.compose.foundation.layout.*
@@ -12,6 +11,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ContextAmbient
 import androidx.compose.ui.text.SoftwareKeyboardController
@@ -20,6 +20,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.ui.tooling.preview.Preview
+import com.reprator.khatabook_android.ui.util.ErrorSnackbar
 
 @Preview(showBackground = true)
 @Composable
@@ -30,10 +31,26 @@ fun DefaultPreviewLogin() {
 @Composable
 fun LoginPage() {
     val textValue = remember { mutableStateOf(TextFieldValue()) }
+    val error = remember { mutableStateOf("") }
 
     val submit: () -> Unit = {
-        Log.e("Hi", "Hi")
+        val text = textValue.value.text
+
+        error.value = when {
+            text.isEmpty() -> {
+                "Please enter phone number"
+            }
+            text.length < 10 -> {
+                "Phone number can't be less than 10"
+            }
+            text.length > 10 -> {
+                "Phone number can't be greater than 10"
+            }
+            else -> ""
+        }
     }
+
+    val snackBarDismiss = { error.value = "" }
 
     Column(
         modifier = Modifier.fillMaxSize().padding(15.dp),
@@ -42,12 +59,22 @@ fun LoginPage() {
         MaterialTextInputComponent(textValue, submit)
         Spacer(modifier = Modifier.preferredHeight(16.dp))
         MaterialButtonComponent(submit)
+
+        Stack {
+            ErrorSnackbar(
+                errorMessage = error.value,
+                modifier = Modifier.gravity(Alignment.BottomCenter),
+                onDismiss = snackBarDismiss
+            )
+        }
     }
 }
 
 @Composable
-fun MaterialTextInputComponent(textValue: MutableState<TextFieldValue>, buttonClick: () -> Unit) {
-
+private fun MaterialTextInputComponent(
+    textValue: MutableState<TextFieldValue>,
+    buttonClick: () -> Unit
+) {
     OutlinedTextField(
         value = textValue.value,
         onValueChange = { textFieldValue -> textValue.value = textFieldValue },
@@ -59,7 +86,7 @@ fun MaterialTextInputComponent(textValue: MutableState<TextFieldValue>, buttonCl
                                  softwareKeyboardController: SoftwareKeyboardController? ->
             if (imeAction == ImeAction.Done) {
                 softwareKeyboardController?.hideSoftwareKeyboard()
-                buttonClick.invoke()
+                buttonClick()
             }
         },
         modifier = Modifier.fillMaxWidth()
@@ -67,16 +94,14 @@ fun MaterialTextInputComponent(textValue: MutableState<TextFieldValue>, buttonCl
 }
 
 @Composable
-fun MaterialButtonComponent(buttonClick: () -> Unit) {
+private fun MaterialButtonComponent(buttonClick: () -> Unit) {
     val context = ContextAmbient.current
-
     Button(
         onClick = {
             val imm: InputMethodManager =
                 (context as Activity).getSystemService(Activity.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0)
-
-            buttonClick.invoke()
+            buttonClick()
         },
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
